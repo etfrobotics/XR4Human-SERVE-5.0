@@ -1,0 +1,87 @@
+version: '3.2'
+
+services:
+
+  db:
+    container_name: postgres_db
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: AdinApp2022!
+      POSTGRES_DB: adin_db_postgres
+    ports:
+      - "5432:5432"
+    networks:
+      adin_network:
+        aliases:
+          - sqldb
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      #- ./db_data:/var/lib/postgresql/data
+
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: knezevic@etf.rs
+      PGADMIN_DEFAULT_PASSWORD: AdinApp2022!
+    ports:
+      - "5051:80"
+    volumes:
+      - pg_admin:/var/lib/pgadmin
+    networks:
+      - adin_network
+
+  adin_api:
+    image: knez93/adin_api:latest
+    #build:
+    #  context: ./adin_api
+    #  dockerfile: ./adin_api/Dockerfile
+    container_name: adin-api
+    restart: always
+    ports:
+      - 8001:80
+      #- 8001:443
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80; #https://+:443;
+      - ConnectionStrings__postgreSQLstring=Host=host.docker.internal;Port=5432;Database=adin_db_postgres;Username=admin;Password=AdinApp2022!
+      #- ASPNETCORE_Kestrel__Certificates__Default__Password=AdinApp2022!
+      #- ASPNETCORE_Kestrel__Certificates__Default__Path=/https/adin_api.pfx
+    volumes:
+      - ~/.aspnet/https:/https:ro
+      - "./files:/app/files"
+    depends_on:
+      - db
+    networks:
+      adin_network:
+        aliases:
+          - adin-api
+  app:
+    container_name: adin-front
+    image: knez93/adin_front:latest
+    restart: always
+    #build:
+    #    context: ./adin_front/adin_front
+    #    dockerfile: Dockerfile
+
+    ports:
+        - "80:80"
+    #depends_on:
+    #  - adin_api
+    networks:
+      adin_network:
+        aliases:
+          - adin-app
+    #volumes:
+      #- "./files:/app/files"
+
+
+networks:
+  adin_network:
+
+volumes:
+  db_data:
+  pg_admin:

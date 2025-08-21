@@ -1,0 +1,6 @@
+[submodule "adin_front"]
+	path = adin_front
+	url = https://github.com/etfrobotics/adin_front
+[submodule "adin_api"]
+	path = adin_api
+	url = https://github.com/etfrobotics/adin_api
